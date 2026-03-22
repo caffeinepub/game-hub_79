@@ -1,13 +1,7 @@
 import { Input } from "@/components/ui/input";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Gamepad2,
-  Search,
-} from "lucide-react";
+import { Download, Gamepad2, Search, Send } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -22,6 +16,8 @@ interface Game {
   url: string;
   genre: Exclude<Genre, "All">;
 }
+
+const TELEGRAM_URL = "https://t.me/allyonolink";
 
 const GAMES: Game[] = [
   {
@@ -381,7 +377,7 @@ function GameCard({ game, index }: { game: Game; index: number }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.6) }}
-      className="flex-shrink-0 w-[220px] rounded-2xl overflow-hidden flex flex-col"
+      className="rounded-2xl overflow-hidden flex flex-col"
       style={{
         background: "oklch(0.18 0.028 240)",
         border: "1px solid oklch(0.28 0.04 240)",
@@ -459,7 +455,6 @@ function GameCard({ game, index }: { game: Game; index: number }) {
 export default function App() {
   const [search, setSearch] = useState("");
   const [activeGenre, setActiveGenre] = useState<Genre>("All");
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const filteredGames = useMemo(() => {
     return GAMES.filter((g) => {
@@ -470,15 +465,6 @@ export default function App() {
       return matchesSearch && matchesGenre;
     });
   }, [search, activeGenre]);
-
-  function scrollRow(dir: "left" | "right") {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({
-        left: dir === "left" ? -480 : 480,
-        behavior: "smooth",
-      });
-    }
-  }
 
   return (
     <div
@@ -539,12 +525,24 @@ export default function App() {
               </button>
             ))}
           </div>
+
+          {/* Telegram Subscribe button */}
+          <a
+            href={TELEGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border border-sky-400/60 text-white bg-sky-500 hover:bg-sky-400 transition-colors shrink-0 shadow-md"
+            style={{ boxShadow: "0 2px 12px oklch(0.6 0.18 220 / 40%)" }}
+          >
+            <Send className="w-3.5 h-3.5" />
+            Subscribe
+          </a>
         </div>
       </header>
 
       {/* Main */}
       <main className="flex-1 max-w-[1280px] w-full mx-auto px-4 sm:px-6 py-6">
-        {/* Section heading + scroll controls */}
+        {/* Section heading */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-heading font-extrabold text-lg uppercase tracking-widest flex items-center gap-3 text-foreground">
             <span
@@ -559,40 +557,14 @@ export default function App() {
               ({filteredGames.length})
             </span>
           </h2>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              data-ocid="game.pagination_prev"
-              onClick={() => scrollRow("left")}
-              aria-label="Scroll left"
-              className="w-9 h-9 rounded-full bg-gaming-surface border border-gaming-border flex items-center justify-center text-foreground hover:border-gaming-cyan/50 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              data-ocid="game.pagination_next"
-              onClick={() => scrollRow("right")}
-              aria-label="Scroll right"
-              className="w-9 h-9 rounded-full bg-gaming-surface border border-gaming-border flex items-center justify-center text-foreground hover:border-gaming-cyan/50 transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
         </div>
 
-        {/* Horizontal game row */}
+        {/* Responsive grid */}
         <AnimatePresence mode="wait">
           {filteredGames.length > 0 ? (
-            <div
-              ref={scrollRef}
-              className="flex gap-4 overflow-x-auto scrollbar-hide pb-4"
-              style={{ scrollSnapType: "x mandatory" }}
-            >
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {filteredGames.map((game, i) => (
-                <div key={game.id} style={{ scrollSnapAlign: "start" }}>
-                  <GameCard game={game} index={i} />
-                </div>
+                <GameCard key={game.id} game={game} index={i} />
               ))}
             </div>
           ) : (
@@ -623,11 +595,10 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Count bar */}
+        {/* Count */}
         {filteredGames.length > 0 && (
           <p className="text-xs text-muted-foreground mt-3">
-            Showing {filteredGames.length} of {GAMES.length} games &mdash;
-            scroll right to see more
+            Showing {filteredGames.length} of {GAMES.length} games
           </p>
         )}
       </main>
@@ -650,17 +621,28 @@ export default function App() {
               caffeine.ai
             </a>
           </p>
-          <p className="text-xs text-muted-foreground">
-            All games sourced from{" "}
+          <div className="flex items-center gap-3 flex-wrap justify-center">
+            <p className="text-xs text-muted-foreground">
+              All games sourced from{" "}
+              <a
+                href="https://www.allyonogamess.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gaming-cyan hover:underline"
+              >
+                allyonogamess.com
+              </a>
+            </p>
             <a
-              href="https://www.allyonogamess.com"
+              href={TELEGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gaming-cyan hover:underline"
+              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-sky-500 hover:bg-sky-400 px-3 py-1 rounded-full transition-colors"
             >
-              allyonogamess.com
+              <Send className="w-3 h-3" />
+              Subscribe on Telegram
             </a>
-          </p>
+          </div>
         </div>
       </footer>
     </div>
